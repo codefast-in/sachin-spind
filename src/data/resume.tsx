@@ -4,9 +4,9 @@ import {HomeIcon, NotebookIcon} from "lucide-react";
 export const DATA = {
   name: "Sachin Gadre",
   initials: "DV",
-  url: "https://dillion.io",
-  location: "San Francisco, CA",
-  locationLink: "https://www.google.com/maps/place/sanfrancisco",
+  url: "https://sachin-spind.vercel.app/",
+  location: "Bhopal, India",
+  locationLink: "https://www.google.com/maps/place/bhopal",
   description:
     "Frontend Developer. I love building things and helping people. Very active on Twitter.",
   summary:
@@ -143,7 +143,7 @@ export const DATA = {
     },
     {
       title: "Shakya Sales",
-      href: "https://magicui.design",
+      href: "https://sakya-salse-lcfk.onrender.com/",
       dates: "July 2024 - July 2024",
       active: true,
       description:
@@ -154,7 +154,7 @@ export const DATA = {
       links: [
         {
           type: "Website",
-          href: "https://mediumaquamarine-crow-139880.hostingersite.com/",
+          href: "https://sakya-salse-lcfk.onrender.com/",
           icon: <Icons.globe className="size-3" />,
         },
         {
