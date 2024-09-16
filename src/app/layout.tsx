@@ -1,12 +1,13 @@
 import Navbar from "@/components/navbar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { DATA } from "@/data/resume";
-import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
-import { Sen as FontSans } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import {ThemeProvider} from "@/components/theme-provider";
+import {TooltipProvider} from "@/components/ui/tooltip";
+import {DATA} from "@/data/resume";
+import {cn} from "@/lib/utils";
+import type {Metadata} from "next";
+import {Sen as FontSans} from "next/font/google";
+import {SpeedInsights} from "@vercel/speed-insights/next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -56,15 +57,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      .
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3505726956119667"
+        crossOrigin="anonymous"></script>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased max-w-2xl mx-auto py-12 sm:py-24 px-6",
           fontSans.variable
-        )}
-      >
+        )}>
         <ThemeProvider attribute="class" defaultTheme="light">
           <TooltipProvider delayDuration={0}>
-          <SpeedInsights/>
+            <SpeedInsights />
+            <Analytics />
             {children}
             <Navbar />
           </TooltipProvider>
