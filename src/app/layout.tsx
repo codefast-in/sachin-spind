@@ -7,7 +7,7 @@ import type {Metadata} from "next";
 import {Sen as FontSans} from "next/font/google";
 import {SpeedInsights} from "@vercel/speed-insights/next";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react"
+import {Analytics} from "@vercel/analytics/react";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -57,8 +57,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3505726956119667"
-     crossOrigin="anonymous"></script></head>
+      <head>
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-3505726956119667"></meta>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3505726956119667"
+          crossOrigin="anonymous"></script>
+      </head>
       <script
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3505726956119667"
