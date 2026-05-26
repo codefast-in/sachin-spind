@@ -1,20 +1,31 @@
-import {Icons} from "@/components/icons";
-import {HomeIcon, NotebookIcon} from "lucide-react";
+import { Icons } from "@/components/icons";
+import { HomeIcon, NotebookIcon } from "lucide-react";
 
 export const DATA = {
   name: "Sachin Gadre",
   initials: "DV",
   url: "https://sachin-spind.vercel.app/",
   location: "Bhopal, India",
-  locationLink: "https://www.google.com/maps/place/bhopal",
+  locationLink: "https://www.google.com/maps/place/jaipur",
   description:
-    "Frontend Developer. I love building things and helping people. Very active on Twitter.",
+    "Full Stack Developer. I love building things which help people's lives. Very active on Linkedin.",
   summary:
-    "Dedicated and results-driven professional with a solid background in front-end development, holding a [Master of Computer Application degree with a major in web technology](/#education). Proven expertise in JavaScript libraries such as React.js, Next.js, Material UI, and Redux, along with proficiency in CSS frameworks like Bootstrap and Tailwind CSS. Skilled in using GitHub for version control and experienced in VPS configuration. Seeking a challenging position to contribute innovative solutions, collaborate with dynamic teams, and further enhance my skills in a growth-oriented environment.",
+  "Results-driven Software Developer with over 3 years of professional experience and a [Master’s degree in Computer Applications (MCA)](/#education). Demonstrates strong proficiency in React Native and modern JavaScript frameworks, including React.js, Next.js, and Node.js. Specializes in developing scalable cross-platform mobile applications and high-performance web solutions, with a focus on delivering seamless user experiences, maintainable codebases, and efficient system architecture.",
   avatarUrl: "/me12.jpg",
   skills: [
     "React",
     "React Native",
+    "Expo",
+    "JavaScript",
+    "Push Notification",
+    "Firebase",
+    "Android",
+    "iOS",
+    "Google Play Store",
+    "Apple App Store",
+    "Google Maps API",
+    "Zoom SDK",
+    "Zego Cloude SDK",
     "Next.js",
     "GitHub",
     "Typescript",
@@ -23,14 +34,11 @@ export const DATA = {
     "Shadcn",
     "Next UI",
     "Node.js",
-    "Python",    
-    
-    
-    
+    "Python",
   ],
   navbar: [
-    {href: "/", icon: HomeIcon, label: "Home"},
-    {href: "/blog", icon: NotebookIcon, label: "Blog"},
+    { href: "/", icon: HomeIcon, label: "Home" },
+    // { href: "/blog", icon: NotebookIcon, label: "Blog" },
   ],
   contact: {
     email: "sachinspindofficial.com",
@@ -67,7 +75,6 @@ export const DATA = {
         name: "Send Email",
         url: "mailto:sachinspindofficial@gmail.com",
         icon: Icons.email,
-
         navbar: true,
       },
     },
@@ -75,17 +82,37 @@ export const DATA = {
 
   work: [
     {
+      company: "NeuroEquilibrium Diagnostic Systems",
+      href: "https://www.neuroequilibrium.in/",
+      badges: [],
+      location: "Jaipur",
+      title: "Software Engineer",
+      logoUrl: "/neuro.png",
+      start: "May 2026",
+      end: "Present",
+      description: "As a Software Engineer at NeuroEquilibrium, I design, develop, and optimize cross-platform mobile applications for NeuroEquilibrium's products. My work bridges seamless UI/UX with robust functionality, ensuring high performance on both iOS and Android"
+    }, {
+      company: "Dev Technosys Private Limited",
+      href: "https://devtechnosys.com/",
+      badges: [],
+      location: "Jaipur",
+      title: "React Native Developer",
+      logoUrl: "/devtech.png",
+      start: "June 2025",
+      end: "May 2026",
+      description: "As a React Native Developer at Dev Technosys, I design, develop, and optimize cross-platform mobile applications for clients across industries. My work bridges seamless UI/UX with robust functionality, ensuring high performance on both iOS and Android"
+    }, {
       company: "Beangate IT Solutions",
       href: "https://beangates.com/",
       badges: [],
       location: "Bhopal",
       title: "Front End Developer",
       logoUrl: "/beangate.png",
-      start: "April 2023",
-      end: "Present",
-      description:"As a Frontend Developer at Beangate IT Solutions, I spearheaded the creation of responsive and user-friendly interfaces using React UI libraries such as Shadcn, Material UI, and Next UI. I collaborated closely with backend developers to integrate frontend components with REST APIs, ensuring efficient data flow and functionality. My role involved configuring and deploying Virtual Private Servers (VPS) to ensure seamless accessibility and optimal performance. I effectively managed state using the Redux toolkit, mitigating props drilling in React applications. Over the course of my tenure, I worked on three major projects and led one, achieving key milestones such as successful REST API integration and optimized application performance. Through these experiences, I gained proficiency in React.js and associated libraries, expertise in REST API integration, extensive experience with the Redux toolkit, and in-depth knowledge of VPS configuration and hosting processes.As a Frontend Developer at Beangate IT Solutions, I spearheaded the creation of responsive and user-friendly interfaces using React UI libraries such as Shadcn, Material UI, and Next UI. I collaborated closely with backend developers to integrate frontend components with REST APIs, ensuring efficient data flow and functionality. My role involved configuring and deploying Virtual Private Servers (VPS) to ensure seamless accessibility and optimal performance. I effectively managed state using the Redux toolkit, mitigating props drilling in React applications. Over the course of my tenure, I worked on three major projects and led one, achieving key milestones such as successful REST API integration and optimized application performance. Through these experiences, I gained proficiency in React.js and associated libraries, expertise in REST API integration, extensive experience with the Redux toolkit, and in-depth knowledge of VPS configuration and hosting processes."
+      start: "January 2023",
+      end: "May 2025",
+      description: "As a Frontend Developer at Beangate IT Solutions, I spearheaded the creation of responsive and user-friendly interfaces using React UI libraries such as Shadcn, Material UI, and Next UI. I collaborated closely with backend developers to integrate frontend components with REST APIs, ensuring efficient data flow and functionality. My role involved configuring and deploying Virtual Private Servers (VPS) to ensure seamless accessibility and optimal performance. I effectively managed state using the Redux toolkit, mitigating props drilling in React applications. Over the course of my tenure, I worked on three major projects and led one, achieving key milestones such as successful REST API integration and optimized application performance. Through these experiences, I gained proficiency in React.js and associated libraries, expertise in REST API integration, extensive experience with the Redux toolkit, and in-depth knowledge of VPS configuration and hosting processes.As a Frontend Developer at Beangate IT Solutions, I spearheaded the creation of responsive and user-friendly interfaces using React UI libraries such as Shadcn, Material UI, and Next UI. I collaborated closely with backend developers to integrate frontend components with REST APIs, ensuring efficient data flow and functionality. My role involved configuring and deploying Virtual Private Servers (VPS) to ensure seamless accessibility and optimal performance. I effectively managed state using the Redux toolkit, mitigating props drilling in React applications. Over the course of my tenure, I worked on three major projects and led one, achieving key milestones such as successful REST API integration and optimized application performance. Through these experiences, I gained proficiency in React.js and associated libraries, expertise in REST API integration, extensive experience with the Redux toolkit, and in-depth knowledge of VPS configuration and hosting processes."
     },
-    
+
   ],
   education: [
     {
@@ -112,7 +139,7 @@ export const DATA = {
       start: "2016",
       end: "2021",
     },
-    
+
   ],
   projects: [
     {
@@ -125,7 +152,7 @@ export const DATA = {
       technologies: [
         "Next.js",
         "Typescript",
-        "TailwindCSS",    
+        "TailwindCSS",
         "Shadcn UI",
         "Next UI",
         "Redux"
@@ -149,7 +176,7 @@ export const DATA = {
       description:
         "Designed, developed and sold animated UI components for developers.",
       technologies: [
-        "HTML","CSS","Java Script","Email JS"
+        "HTML", "CSS", "Java Script", "Email JS"
       ],
       links: [
         {
@@ -166,7 +193,7 @@ export const DATA = {
       image: "/shakya.png",
       video: "",
     },
-   
+
   ],
   // hackathons: [
   //   {
