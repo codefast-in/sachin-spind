@@ -6,14 +6,65 @@ import { ResumeCard } from "@/components/resume-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DATA } from "@/data/resume";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Markdown from "react-markdown";
 
 const BLUR_FADE_DELAY = 0.04;
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+// Structured data so search engines can show a rich profile result.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${DATA.url}/#person`,
+      name: DATA.name,
+      url: DATA.url,
+      image: `${DATA.url}${DATA.avatarUrl}`,
+      jobTitle: "React Native Developer",
+      description: DATA.summary.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"),
+      email: `mailto:${DATA.contact.email}`,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Jaipur",
+        addressCountry: "IN",
+      },
+      worksFor: {
+        "@type": "Organization",
+        name: DATA.work[0].company,
+        url: DATA.work[0].href,
+      },
+      alumniOf: DATA.education.slice(0, 2).map((education) => ({
+        "@type": "CollegeOrUniversity",
+        name: education.school,
+      })),
+      knowsAbout: DATA.skills,
+      sameAs: Object.values(DATA.contact.social)
+        .map((social) => social.url)
+        .filter((url) => url.startsWith("http")),
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${DATA.url}/#website`,
+      url: DATA.url,
+      name: DATA.name,
+      publisher: { "@id": `${DATA.url}/#person` },
+    },
+  ],
+};
+
 export default function Page() {
   return (
     <main className="flex flex-col min-h-[100dvh] space-y-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section id="hero">
         <div className="mx-auto w-full max-w-2xl space-y-8">
           <div className="gap-2 flex justify-between">
@@ -22,19 +73,27 @@ export default function Page() {
                 delay={BLUR_FADE_DELAY}
                 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none"
                 yOffset={8}
+                as="h1"
                 text={`Hi, I'm ${DATA.name.split(" ")[0]} 👋`}
               />
               <BlurFadeText
                 className="max-w-[600px] md:text-xl"
                 delay={BLUR_FADE_DELAY}
+                as="p"
                 text={DATA.description}
               />
             </div>
             <BlurFade delay={BLUR_FADE_DELAY}>
-              <Avatar className="size-28 border">
-                <AvatarImage alt={DATA.name} src={DATA.avatarUrl} />
-                <AvatarFallback>{DATA.initials}</AvatarFallback>
-              </Avatar>
+              <div className="rounded-full bg-gradient-to-tr from-foreground via-muted-foreground to-foreground p-[3px] shadow-lg">
+                <Avatar className="size-28 border-[3px] border-background">
+                  <AvatarImage
+                    alt={DATA.name}
+                    src={DATA.avatarUrl}
+                    className="object-cover"
+                  />
+                  <AvatarFallback>{DATA.initials}</AvatarFallback>
+                </Avatar>
+              </div>
             </BlurFade>
           </div>
         </div>
@@ -123,9 +182,9 @@ export default function Page() {
                   Check out my latest work
                 </h2>
                 <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  I&apos;ve worked on a variety of projects, from simple
-                  websites to complex web applications. Here are a few of my
-                  favorites.
+                  I&apos;ve worked on a variety of projects, from mobile apps
+                  live on Google Play and the App Store to full-stack web
+                  applications. Here are a few of my favorites.
                 </p>
               </div>
             </div>

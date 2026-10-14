@@ -1,47 +1,58 @@
 import { Icons } from "@/components/icons";
-import { HomeIcon, NotebookIcon } from "lucide-react";
+import { HomeIcon, NotebookIcon, SmartphoneIcon } from "lucide-react";
 
 export const DATA = {
   name: "Sachin Gadre",
-  initials: "DV",
-  url: "https://sachin-spind.vercel.app/",
-  location: "Bhopal, India",
+  initials: "SG",
+  url: "https://sachin-spind.vercel.app",
+  location: "Jaipur, India",
   locationLink: "https://www.google.com/maps/place/jaipur",
   description:
-    "Full Stack Developer. I love building things which help people's lives. Very active on Linkedin.",
+    "React Native Developer. I build production iOS and Android apps, currently healthcare apps at NeuroEquilibrium.",
   summary:
-  "Results-driven Software Developer with over 3 years of professional experience and a [Master’s degree in Computer Applications (MCA)](/#education). Demonstrates strong proficiency in React Native and modern JavaScript frameworks, including React.js, Next.js, and Node.js. Specializes in developing scalable cross-platform mobile applications and high-performance web solutions, with a focus on delivering seamless user experiences, maintainable codebases, and efficient system architecture.",
-  avatarUrl: "/me12.jpg",
+  "React Native developer building production iOS and Android apps, currently on healthcare products at NeuroEquilibrium with React Native 0.84, TypeScript and Redux. Improved app performance by 60% and shipped releases that grew new users by 10%. Built [Tap In Shorts](/#projects) and [ZimCupid](/#projects), both live on Google Play and the App Store, and built Code Emergency with AIIMS Bhopal for emergency medical teams. I hold a [Master's degree in Computer Applications (MCA)](/#education).",
+  avatarUrl: "/avatar.jpg",
   skills: [
-    "React",
     "React Native",
     "Expo",
+    "EAS",
+    "React Navigation",
+    "TypeScript",
     "JavaScript",
-    "Push Notification",
+    "Redux Toolkit",
+    "React.js",
+    "Next.js",
+    "Tailwind CSS",
+    "Shadcn UI",
+    "Material UI",
+    "REST APIs",
     "Firebase",
-    "Android",
-    "iOS",
+    "Push Notifications",
+    "Socket.io",
+    "ZegoCloud",
+    "Zoom SDK",
+    "Stripe",
+    "Google Maps API",
+    "Deep Linking",
+    "Social Login",
+    "Node.js",
+    "Express.js",
+    "MongoDB",
+    "VPS Deployment",
+    "GitHub",
+    "AWS CodeCommit",
+    "Postman",
     "Google Play Store",
     "Apple App Store",
-    "Google Maps API",
-    "Zoom SDK",
-    "Zego Cloude SDK",
-    "Next.js",
-    "GitHub",
-    "Typescript",
-    "Redux",
-    "REST API",
-    "Shadcn",
-    "Next UI",
-    "Node.js",
-    "Python",
+    "Claude",
+    "Cursor",
   ],
   navbar: [
     { href: "/", icon: HomeIcon, label: "Home" },
-    // { href: "/blog", icon: NotebookIcon, label: "Blog" },
+    { href: "/blog", icon: NotebookIcon, label: "Blog" },
   ],
   contact: {
-    email: "sachinspindofficial.com",
+    email: "sachinspindofficial@gmail.com",
     tel: "+919516905325",
     social: {
       GitHub: {
@@ -88,9 +99,9 @@ export const DATA = {
       location: "Jaipur",
       title: "Software Engineer",
       logoUrl: "/neuro.png",
-      start: "May 2026",
+      start: "April 2026",
       end: "Present",
-      description: "As a Software Engineer at NeuroEquilibrium, I design, develop, and optimize cross-platform mobile applications for NeuroEquilibrium's products. My work bridges seamless UI/UX with robust functionality, ensuring high performance on both iOS and Android"
+      description: "I build and maintain cross-platform healthcare apps in React Native and TypeScript, including patient management and health monitoring, with healthcare APIs, secure data handling and payments. I improved overall app performance by 60% and shipped 4 releases with new features that grew new users by 10%. I migrated the legacy app codebase to meet current Google Play and App Store guidelines, and owned a new app end to end: development, testing and release on both stores."
     }, {
       company: "Dev Technosys Private Limited",
       href: "https://devtechnosys.com/",
@@ -99,34 +110,34 @@ export const DATA = {
       title: "React Native Developer",
       logoUrl: "/devtech.png",
       start: "June 2025",
-      end: "May 2026",
-      description: "As a React Native Developer at Dev Technosys, I design, develop, and optimize cross-platform mobile applications for clients across industries. My work bridges seamless UI/UX with robust functionality, ensuring high performance on both iOS and Android"
+      end: "April 2026",
+      description: "I designed, built and optimized cross-platform apps for international clients across industries. I built Tap In Shorts from scratch for a US client and delivered core features for the ZimCupid dating app; both are live on Google Play and the App Store."
     }, {
       company: "Beangate IT Solutions",
       href: "https://beangates.com/",
       badges: [],
       location: "Bhopal",
-      title: "Front End Developer",
+      title: "Mobile and Web Application Developer",
       logoUrl: "/beangate.png",
       start: "January 2023",
-      end: "May 2025",
-      description: "As a Frontend Developer at Beangate IT Solutions, I spearheaded the creation of responsive and user-friendly interfaces using React UI libraries such as Shadcn, Material UI, and Next UI. I collaborated closely with backend developers to integrate frontend components with REST APIs, ensuring efficient data flow and functionality. My role involved configuring and deploying Virtual Private Servers (VPS) to ensure seamless accessibility and optimal performance. I effectively managed state using the Redux toolkit, mitigating props drilling in React applications. Over the course of my tenure, I worked on three major projects and led one, achieving key milestones such as successful REST API integration and optimized application performance. Through these experiences, I gained proficiency in React.js and associated libraries, expertise in REST API integration, extensive experience with the Redux toolkit, and in-depth knowledge of VPS configuration and hosting processes.As a Frontend Developer at Beangate IT Solutions, I spearheaded the creation of responsive and user-friendly interfaces using React UI libraries such as Shadcn, Material UI, and Next UI. I collaborated closely with backend developers to integrate frontend components with REST APIs, ensuring efficient data flow and functionality. My role involved configuring and deploying Virtual Private Servers (VPS) to ensure seamless accessibility and optimal performance. I effectively managed state using the Redux toolkit, mitigating props drilling in React applications. Over the course of my tenure, I worked on three major projects and led one, achieving key milestones such as successful REST API integration and optimized application performance. Through these experiences, I gained proficiency in React.js and associated libraries, expertise in REST API integration, extensive experience with the Redux toolkit, and in-depth knowledge of VPS configuration and hosting processes."
+      end: "June 2025",
+      description: "I built cross-platform React Native apps and responsive web interfaces with React, Next.js, Shadcn, Material UI and Next UI, integrating REST APIs with backend teams. I built Code Emergency with AIIMS Bhopal, and delivered client web projects, including Ramya Online Center: an e-commerce site with admin and employee panels on Node.js, Express and MongoDB, deployed on a Hostinger VPS."
     },
 
   ],
   education: [
     {
-      school: "Rajiv Gandhi Proudyogiki Vishwavidyalaya",
+      school: "Technocrats Institute of Technology, Bhopal",
       href: "https://www.rgpv.ac.in/",
-      degree: "Master's Degree of Computer Application (MCA)",
-      logoUrl: "/Rgpvlogo.webp",
+      degree: "Master of Computer Applications (MCA), RGPV",
+      logoUrl: "/RGPVlogo.webp",
       start: "2022",
       end: "2024",
     },
     {
-      school: "Rani Durgavati Vishwavidyalaya",
+      school: "Govt. Autonomous Post Graduate College, Chhindwara",
       href: "https://rdvv.mponline.gov.in/portal/index.aspx",
-      degree: "Bachelor's Degree of Computer Application (BCA)",
+      degree: "Bachelor of Computer Applications (BCA), RDVV",
       logoUrl: "/RDVVlogo.webp",
       start: "2018",
       end: "2021",
@@ -143,19 +154,131 @@ export const DATA = {
   ],
   projects: [
     {
-      title: "Rmaya Online Center",
+      title: "Tap In Shorts",
+      href: "https://tapinshorts.com/",
+      dates: "TAP IN SHORT ORIGINALS LLC (US)",
+      active: true,
+      description:
+        "A short-video streaming app I built from scratch, owning the architecture, feature development and deployment. Series-based short videos with trimming, likes, comments, saves, sharing and deep linking, plus Stripe payments, social login and referral rewards with coins.",
+      technologies: [
+        "React Native",
+        "Expo",
+        "TypeScript",
+        "Stripe",
+        "Social Login",
+        "Deep Linking",
+      ],
+      links: [
+        {
+          type: "Website",
+          href: "https://tapinshorts.com/",
+          icon: <Icons.globe className="size-3" />,
+        },
+        {
+          type: "Android",
+          href: "https://play.google.com/store/apps/details?id=com.just.tapin",
+          icon: <SmartphoneIcon className="size-3" />,
+        },
+        {
+          type: "iOS",
+          href: "https://apps.apple.com/in/app/tap-in-shorts/id6762819306",
+          icon: <SmartphoneIcon className="size-3" />,
+        },
+      ],
+      image: "/projects/tapin-cover.jpg",
+      video: "",
+    },
+    {
+      title: "ZimCupid",
+      href: "https://zimcupid.com/",
+      dates: "Tendai Solutions LLC",
+      active: true,
+      description:
+        "A dating app where I fixed critical chat failures by building reliable real-time messaging with Socket.io, integrated ZegoCloud audio and video calling and push notifications for messages, matches and calls, and published the app on both stores.",
+      technologies: [
+        "React Native",
+        "Socket.io",
+        "ZegoCloud",
+        "Push Notifications",
+      ],
+      links: [
+        {
+          type: "Website",
+          href: "https://zimcupid.com/",
+          icon: <Icons.globe className="size-3" />,
+        },
+        {
+          type: "Android",
+          href: "https://play.google.com/store/apps/details?id=com.zimcupid.live",
+          icon: <SmartphoneIcon className="size-3" />,
+        },
+        {
+          type: "iOS",
+          href: "https://apps.apple.com/in/app/zimcupid/id1403505138",
+          icon: <SmartphoneIcon className="size-3" />,
+        },
+      ],
+      image: "/projects/zimcupid-cover.jpg",
+      video: "",
+    },
+    {
+      title: "Code Emergency",
+      href: "",
+      dates: "AIIMS Bhopal (onsite)",
+      active: true,
+      description:
+        "Built with AIIMS Bhopal, a React Native app that guides emergency medical teams through critical care protocols in situations such as cardiac arrest and accidents. Continuous audio guidance and text-to-speech, offline access to protocols, tested across devices including background audio on iOS and Android.",
+      technologies: [
+        "React Native",
+        "Expo Audio",
+        "Expo Speech",
+        "Redux",
+        "React Navigation",
+      ],
+      links: [],
+      image: "/projects/code-emergency-cover.jpg",
+      video: "",
+    },
+    {
+      title: "Patient App, tele-rehabilitation",
+      href: "https://play.google.com/store/apps/details?id=com.nedsapp",
+      dates: "NeuroEquilibrium",
+      active: true,
+      description:
+        "The app patients use for online physiotherapy and counselling sessions with doctors over the Zoom Video SDK. I built OTP login and the appointment flow (session packs, slot booking, reschedule, cancel and join rules), fixed a billing gap in session booking, added week-wise home exercises and multi-language support, and upgraded it to React Native 0.84 with Android target API 36.",
+      technologies: [
+        "React Native",
+        "TypeScript",
+        "Zoom Video SDK",
+        "Redux",
+      ],
+      links: [
+        {
+          type: "Android",
+          href: "https://play.google.com/store/apps/details?id=com.nedsapp",
+          icon: <SmartphoneIcon className="size-3" />,
+        },
+      ],
+      image: "/projects/patient-app-cover.jpg",
+      video: "",
+    },
+    {
+      title: "Ramya Online Center",
       href: "https://ramyaonlinecenter.com",
       dates: "April 2024 - July 2024",
       active: true,
       description:
-        "Ramya Online Center is a new startup that provides e-commerce services and services related to an MP online shop or the CSC shop in Madhya Pradesh. They majorly operate in the Raisen district of MP.",
+        "An e-commerce site for a startup offering MP Online and CSC shop services in the Raisen district of Madhya Pradesh, with admin and employee panels, deployed on a Hostinger VPS.",
       technologies: [
         "Next.js",
         "Typescript",
         "TailwindCSS",
         "Shadcn UI",
         "Next UI",
-        "Redux"
+        "Redux",
+        "Node.js",
+        "Express.js",
+        "MongoDB",
       ],
       links: [
         {

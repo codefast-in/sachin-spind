@@ -5,7 +5,11 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Blog",
-  description: "My thoughts on software development, life, and more.",
+  description:
+    "Articles by Sachin Gadre on React, React Native and mobile app development.",
+  alternates: {
+    canonical: "/blog",
+  },
 };
 
 const BLUR_FADE_DELAY = 0.04;
@@ -44,7 +48,7 @@ export default async function BlogPage() {
               )}
               delay={BLUR_FADE_DELAY * 2 + id * 0.05}>
               <div className="w-full flex flex-row items-center gap-4 h-full">
-                <img src={post.metadata.image} alt={post.metadata.summary} height={50} width={50}/>
+                <img src={post.metadata.image} alt={post.metadata.title} height={50} width={50} className="size-[50px] shrink-0 rounded-md object-cover"/>
                 <div>
                   <p className="tracking-tight">{post.metadata.title}</p>
                 <p className="h-fit text-xs text-muted-foreground">

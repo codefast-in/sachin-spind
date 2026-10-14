@@ -1,0 +1,217 @@
+---
+title: "Building Reliable Real-Time Chat in React Native with Socket.io"
+publishedAt: "2026-10-14"
+summary: "Why chat breaks on mobile and how to fix it: one socket per app, listeners that clean up, reconnecting after the app comes back from the background, acknowledgements, and catching up on missed messages."
+image: /blog-covers/react-native-socket-io-real-time-chat.jpg
+---
+
+A chat screen that works on your desk can fall apart in your users' hands. Phones lose signal in lifts, switch from Wi-Fi to mobile data, and suspend apps the moment they go to the background. Messages arrive twice, arrive late, or never arrive at all.
+
+I ran into all of this while working on [ZimCupid](/#projects), a dating app live on Google Play and the App Store, where I fixed critical chat failures by rebuilding real-time messaging on Socket.io. This post walks through the patterns that made the chat reliable. They apply to any React Native app that uses Socket.io: chat, live order tracking, notifications or multiplayer features.
+
+![Real-time chat in React Native with Socket.io](/blog-covers/react-native-socket-io-real-time-chat.jpg)
+
+## Why Chat Breaks on Mobile
+
+Most chat bugs in React Native come from a handful of causes:
+
+- **Multiple socket connections.** Calling `io()` inside a component creates a new connection every time that component mounts. Users receive every message two or three times.
+- **Listeners that never clean up.** Each `socket.on()` without a matching `socket.off()` adds another handler. After a few screen visits, one message triggers several state updates.
+- **The app goes to the background.** iOS and Android suspend the JavaScript thread, and the connection drops. When the user comes back, nothing tells the app that it missed messages.
+- **No delivery confirmation.** The client sends a message and assumes it arrived. If the connection dropped a second earlier, the message is silently lost.
+
+Each of the sections below fixes one of these.
+
+## Step 1: Create One Socket for the Whole App
+
+Keep a single connection in its own module and reuse it everywhere. Install the client first:
+
+```bash
+npm install socket.io-client
+```
+
+Then create the socket lazily, so it only connects once the user is logged in:
+
+```ts
+// src/services/socket.ts
+import { io, Socket } from "socket.io-client";
+
+const API_URL = "https://api.example.com";
+
+let socket: Socket | null = null;
+
+export function getSocket(token: string): Socket {
+  if (!socket) {
+    socket = io(API_URL, {
+      transports: ["websocket"], // skip HTTP long-polling on mobile
+      auth: { token },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10000,
+    });
+  }
+  return socket;
+}
+
+export function closeSocket() {
+  socket?.disconnect();
+  socket = null;
+}
+```
+
+Call `closeSocket()` on logout so the next user does not inherit the previous user's connection.
+
+Forcing `transports: ["websocket"]` avoids the initial long-polling request, which is slower and less reliable on mobile networks. Make sure your server accepts WebSocket connections directly.
+
+## Step 2: Register Listeners Once and Clean Them Up
+
+Subscribe inside `useEffect` and always return a cleanup function that removes the exact same handler:
+
+```tsx
+import { useEffect } from "react";
+import { getSocket } from "../services/socket";
+
+type Message = {
+  id: string;
+  clientId: string;
+  chatId: string;
+  text: string;
+  createdAt: string;
+};
+
+export function useChatMessages(
+  chatId: string,
+  token: string,
+  onMessage: (message: Message) => void
+) {
+  useEffect(() => {
+    const socket = getSocket(token);
+
+    const handleMessage = (message: Message) => {
+      if (message.chatId === chatId) onMessage(message);
+    };
+
+    socket.emit("chat:join", { chatId });
+    socket.on("message:new", handleMessage);
+
+    return () => {
+      socket.off("message:new", handleMessage);
+      socket.emit("chat:leave", { chatId });
+    };
+  }, [chatId, token, onMessage]);
+}
+```
+
+Wrap `onMessage` in `useCallback` in the screen that uses this hook. Otherwise the effect re-runs on every render and joins and leaves the room over and over.
+
+## Step 3: Handle the App Going to the Background
+
+Listen to `AppState` and reconnect when the app becomes active again:
+
+```ts
+import { AppState } from "react-native";
+import { getSocket } from "./socket";
+
+export function watchAppState(token: string, onResume: () => void) {
+  const subscription = AppState.addEventListener("change", (state) => {
+    const socket = getSocket(token);
+
+    if (state === "active") {
+      if (!socket.connected) socket.connect();
+      onResume();
+    }
+  });
+
+  return () => subscription.remove();
+}
+```
+
+Reconnecting is only half the job. While the app was in the background, the server may have sent messages that never reached the device. That is what `onResume` is for.
+
+## Step 4: Catch Up on Missed Messages
+
+The socket is for live updates. Your REST API should still be the source of truth. Every time the app reconnects or resumes, ask the server for everything after the last message you have:
+
+```ts
+async function syncMissedMessages(chatId: string, lastMessageId?: string) {
+  const query = lastMessageId ? `?after=${lastMessageId}` : "";
+  const response = await fetch(`${API_URL}/chats/${chatId}/messages${query}`);
+  const missed: Message[] = await response.json();
+  missed.forEach(addMessage);
+}
+```
+
+Socket.io fires a `connect` event after every successful reconnection, which makes it the right place to trigger this sync as well:
+
+```ts
+socket.on("connect", () => {
+  syncMissedMessages(chatId, lastMessageId);
+});
+```
+
+## Step 5: Confirm Delivery with Acknowledgements
+
+Socket.io supports acknowledgements: the server calls back when it has stored the message. With `socket.io-client` 4.6 or later, you can await them with a timeout:
+
+```ts
+async function sendMessage(chatId: string, text: string) {
+  const clientId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  // Show the message immediately as "sending"
+  addMessage({ clientId, chatId, text, status: "sending" });
+
+  try {
+    const saved = await getSocket(token)
+      .timeout(5000)
+      .emitWithAck("message:send", { clientId, chatId, text });
+
+    updateMessage(clientId, { ...saved, status: "sent" });
+  } catch {
+    updateMessage(clientId, { status: "failed" }); // show a retry button
+  }
+}
+```
+
+The `clientId` is generated on the device before sending. It lets you match the server's confirmation to the message you already displayed, and it lets the server ignore a retry it has already saved.
+
+## Step 6: Remove Duplicates and Keep the Order Right
+
+Even with all of the above, the same message can arrive twice: once through the socket and once through the catch-up sync. Store messages by ID instead of pushing them into an array:
+
+```ts
+function addMessage(message: Message) {
+  setMessages((current) => {
+    const key = message.id ?? message.clientId;
+    if (current[key]) return current; // already have it
+    return { ...current, [key]: message };
+  });
+}
+
+const sortedMessages = Object.values(messages).sort(
+  (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+);
+```
+
+Always sort by the server's timestamp, not the device clock. Phones with the wrong time will otherwise show messages in the wrong order.
+
+## Step 7: Use Push Notifications When the App Is Closed
+
+A socket cannot receive anything while the app is closed or suspended. For messages that arrive in that state, the server should send a push notification instead. When the user taps it, the app opens, reconnects and runs the catch-up sync from Step 4.
+
+On ZimCupid, push notifications covered new messages, matches and calls, so users never depended on the socket being alive in the background.
+
+## Testing Checklist
+
+Before shipping a chat feature, test it the way users will break it:
+
+- Send messages while switching between Wi-Fi and mobile data.
+- Put the app in the background for a minute, then come back and check that missed messages appear.
+- Turn on airplane mode, send a message, and check that it shows as failed with a retry option.
+- Open the same chat on two devices and check that nothing is duplicated.
+- Leave and re-enter the chat screen several times, then check that one message triggers one update.
+
+## Conclusion
+
+Reliable chat in React Native comes down to treating the connection as something that will drop. Keep one socket, clean up every listener, reconnect when the app resumes, confirm delivery with acknowledgements, and use your API to catch up on anything missed. With these patterns in place, Socket.io becomes a dependable layer for real-time features rather than a source of bugs.
+
+If you are preparing to ship your app, my [release checklist for Google Play and the App Store](/blog/publish-react-native-app-google-play-app-store) covers the next step.

@@ -1,0 +1,170 @@
+---
+title: "Publishing a React Native App to Google Play and the App Store: My Release Checklist"
+publishedAt: "2026-10-14"
+summary: "A step-by-step checklist for releasing a React Native or Expo app on both stores: app identity, versioning, permissions, privacy and account deletion, builds with EAS, store listings, review and staged rollouts."
+image: /blog-covers/publish-react-native-app-google-play-app-store.jpg
+---
+
+Writing the app is only part of the work. Getting it through Google Play and App Store review, without a rejection that costs you a week, is a skill of its own.
+
+I have published React Native apps end to end on both stores, including [Tap In Shorts](/#projects), a short-video streaming app, and [ZimCupid](/#projects), a dating app. I also maintain healthcare apps at NeuroEquilibrium, where store compliance is part of every release. This is the checklist I go through before each submission.
+
+![Publishing a React Native app to Google Play and the App Store](/blog-covers/publish-react-native-app-google-play-app-store.jpg)
+
+## 1. Lock Down the App's Identity
+
+These values are permanent once the app is published, so decide them before the first build:
+
+- **Android package name**, for example `com.yourcompany.yourapp`
+- **iOS bundle identifier**, usually the same string
+- **App name** as it appears under the icon
+
+In an Expo project, they live in `app.json`:
+
+```json
+{
+  "expo": {
+    "name": "Your App",
+    "slug": "your-app",
+    "version": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "com.yourcompany.yourapp",
+      "buildNumber": "1"
+    },
+    "android": {
+      "package": "com.yourcompany.yourapp",
+      "versionCode": 1
+    }
+  }
+}
+```
+
+## 2. Get Versioning Right
+
+Each store tracks two numbers:
+
+- **The version users see**, such as `1.2.0`. Increase it for every public release.
+- **The internal build number**: `versionCode` on Android and `buildNumber` on iOS. It must go up with every upload, even for a build that never reaches users.
+
+Uploading a build with a number the store has already seen is one of the most common release errors. With EAS, you can let the build service manage it:
+
+```json
+{
+  "cli": {
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "production": {
+      "autoIncrement": true
+    }
+  }
+}
+```
+
+## 3. Meet the Android Target API Level
+
+Google Play requires new apps and updates to target a recent Android API level, and the minimum rises every year. If your app falls behind, Play Console blocks new updates.
+
+Check the current requirement in Play Console before you start a release, not on the day you submit. Raising the target level can change how permissions, notifications and background work behave, so it needs proper testing. For the NeuroEquilibrium patient app, moving to Android target API 36 was a release of its own, done alongside a React Native upgrade.
+
+## 4. Explain Every Permission
+
+Both stores reject apps that ask for permissions they do not clearly need.
+
+- **iOS:** every sensitive permission needs a purpose string that explains, in plain words, why the app needs it. "This app needs the camera" is not enough. "Your camera is used for video consultations with your doctor" is.
+- **Android:** remove permissions your app does not use. Libraries sometimes add them to the manifest without you noticing, so check the merged manifest of your release build.
+
+In Expo, iOS purpose strings go in `app.json`:
+
+```json
+{
+  "expo": {
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Your camera is used for video sessions with your doctor.",
+        "NSMicrophoneUsageDescription": "Your microphone is used so your doctor can hear you during sessions."
+      }
+    }
+  }
+}
+```
+
+## 5. Prepare Privacy Details and Account Deletion
+
+Both stores ask what data your app collects and why:
+
+- **Google Play:** the Data safety form in Play Console.
+- **App Store:** the App Privacy section in App Store Connect.
+
+Answer them based on everything the app sends, including analytics, crash reporting and third-party SDKs. You also need a public privacy policy URL.
+
+If users can create an account in your app, they must also be able to delete it:
+
+- **Apple** requires an option to start account deletion inside the app.
+- **Google Play** requires an in-app path and a web page where users can request deletion without reinstalling the app.
+
+A simple web page with a deletion request form covers the Google requirement. Build it before your first submission, because adding it later means another review cycle.
+
+## 6. Build the Release
+
+With Expo and EAS, one command builds a store-ready binary for each platform:
+
+```bash
+npm install -g eas-cli
+eas login
+eas build --platform android --profile production
+eas build --platform ios --profile production
+```
+
+Android produces an Android App Bundle (`.aab`), which is the format Google Play requires. For a bare React Native project, the equivalent is:
+
+```bash
+cd android
+./gradlew bundleRelease
+```
+
+On iOS without EAS, archive the app in Xcode with **Product > Archive** and upload it from the Organizer.
+
+Keep your Android upload key safe. Google Play App Signing protects the key that signs the final app, but you still need your upload key to submit updates.
+
+## 7. Test Before You Release
+
+Never send a build straight to production:
+
+- **Google Play:** upload to the internal testing track first. It is available to testers within minutes. New personal developer accounts must also run a closed test with a minimum number of testers before they can publish to production, so check the current requirement early.
+- **App Store:** distribute through TestFlight. Internal testers can install a build as soon as it finishes processing.
+
+Test the release build on real devices, not only a debug build on a simulator. Release builds behave differently: logging is stripped, the JavaScript bundle is optimised and some bugs only appear there.
+
+## 8. Write the Store Listing
+
+The store listing is your app's landing page, and it affects how often it appears in store search:
+
+- **Google Play:** a 30-character name, an 80-character short description and a full description of up to 4,000 characters.
+- **App Store:** a 30-character name, a 30-character subtitle and a 100-character keyword field that users never see but search does.
+
+Put the words your users would actually search for into the name, subtitle and first lines of the description. Prepare screenshots for each required device size, and make the first two count, because they are often the only ones people see.
+
+## 9. Help the Reviewers
+
+Most rejections are avoidable:
+
+- **Login-only apps:** give reviewers a working demo account. If your app uses OTP login, provide a test number that always works.
+- **Payments:** on iOS, digital content and subscriptions must use in-app purchase. Payments for physical goods or real-world services, such as a doctor's appointment, can use a provider like Stripe.
+- **Broken links:** make sure the privacy policy, support URL and deletion page all load.
+- **Reviewer notes:** explain any feature that is not obvious, such as a video call that only works when a doctor is online.
+
+## 10. Roll Out Gradually
+
+After approval, do not release to everyone at once:
+
+- **Google Play:** use a staged rollout and start with a small percentage of users.
+- **App Store:** use a phased release, which spreads an update over seven days.
+
+Watch crash reports and reviews during the first days. If something breaks, you can pause the rollout before it reaches most of your users.
+
+## Conclusion
+
+Store releases go smoothly when you treat them as part of development, not a final step. Fix the app's identity early, version every build, keep up with the target API level, be honest about permissions and data, and test release builds on real devices. A checklist like this one turns publishing from a stressful day into a routine task.
+
+Before your next release, it is also worth a round of profiling. My [React Native performance checklist](/blog/react-native-performance-optimization) covers what to look at.

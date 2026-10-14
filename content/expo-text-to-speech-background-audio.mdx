@@ -1,0 +1,176 @@
+---
+title: "Voice Guidance in Expo: Text-to-Speech and Background Audio That Keeps Playing"
+publishedAt: "2026-10-14"
+summary: "How to build continuous spoken guidance in a React Native Expo app with expo-speech and expo-audio: queuing instructions, playing in silent mode and in the background, keeping the screen on, and working fully offline."
+image: /blog-covers/expo-text-to-speech-background-audio.jpg
+---
+
+Some apps are used when people cannot look at a screen. Drivers, athletes and medical teams need instructions they can hear while their hands and eyes are busy.
+
+I built Code Emergency with AIIMS Bhopal: a React Native app that guides emergency medical teams through critical care protocols in situations such as cardiac arrest and accidents. The core feature is continuous audio guidance. The app speaks each step, keeps going when the phone is locked and works without an internet connection. This post explains how to build that kind of voice guidance with Expo.
+
+![Text-to-speech and background audio in Expo](/blog-covers/expo-text-to-speech-background-audio.jpg)
+
+## What the Feature Needs to Do
+
+Spoken guidance sounds simple until you list what can go wrong. The app has to:
+
+- Speak instructions one after another without overlapping.
+- Keep speaking when the phone is in silent mode.
+- Keep playing when the screen locks or the user switches apps.
+- Work with no internet connection.
+- Behave the same way on iOS and Android.
+
+Expo provides two libraries that cover this: `expo-speech` for text-to-speech and `expo-audio` for recorded sounds and audio settings.
+
+```bash
+npx expo install expo-speech expo-audio expo-keep-awake
+```
+
+## Speaking Instructions with expo-speech
+
+`expo-speech` uses the text-to-speech engine built into the phone. You pass it a string and options such as language and speed:
+
+```ts
+import * as Speech from "expo-speech";
+
+Speech.speak("Check the patient's breathing.", {
+  language: "en-IN",
+  rate: 0.95,
+  onDone: () => console.log("Finished speaking"),
+});
+```
+
+A few things to know:
+
+- `language` takes a language code. Available voices differ between devices, so check what is installed with `Speech.getAvailableVoicesAsync()` and fall back to a default if your preferred voice is missing.
+- A slightly slower `rate` is easier to follow in a stressful situation.
+- `Speech.stop()` immediately cancels anything being spoken, which you need when the user skips or goes back a step.
+
+## Queuing Steps So They Never Overlap
+
+A protocol is a sequence of steps, and each one should start only after the previous one finishes. The `onDone` callback makes this straightforward:
+
+```ts
+import * as Speech from "expo-speech";
+
+type Step = { id: string; text: string; pauseAfterMs?: number };
+
+export function speakSteps(steps: Step[], onStep: (id: string) => void) {
+  let index = 0;
+  let cancelled = false;
+
+  const speakNext = () => {
+    if (cancelled || index >= steps.length) return;
+    const step = steps[index++];
+    onStep(step.id); // highlight the step on screen
+
+    Speech.speak(step.text, {
+      language: "en-IN",
+      onDone: () => setTimeout(speakNext, step.pauseAfterMs ?? 800),
+    });
+  };
+
+  speakNext();
+
+  return () => {
+    cancelled = true;
+    Speech.stop();
+  };
+}
+```
+
+The function returns a cancel function. Call it when the screen unmounts or the user changes protocol, so old instructions never keep talking over new ones.
+
+Showing the current step on screen at the same time as speaking it helps team members who join halfway through.
+
+## Playing Sounds with expo-audio
+
+Some cues work better as sounds than words: a short tone at the start of each step, or a repeating beat that sets a rhythm. `expo-audio` plays sound files bundled with the app:
+
+```tsx
+import { useAudioPlayer } from "expo-audio";
+
+const tone = require("../assets/sounds/step-tone.mp3");
+
+export function useStepTone() {
+  const player = useAudioPlayer(tone);
+
+  return () => {
+    player.seekTo(0);
+    player.play();
+  };
+}
+```
+
+Because the sound files ship inside the app, they play instantly and work offline.
+
+## Playing in Silent Mode and in the Background
+
+By default, iOS mutes app audio when the silent switch is on, and both platforms may stop audio when the app leaves the foreground. For guidance that must keep going, set the audio mode once when the app starts:
+
+```ts
+import { setAudioModeAsync } from "expo-audio";
+
+await setAudioModeAsync({
+  playsInSilentMode: true,
+  shouldPlayInBackground: true,
+});
+```
+
+iOS also needs to know the app plays audio in the background. Add the background mode to `app.json`, then create a new build, because this changes the native project:
+
+```json
+{
+  "expo": {
+    "ios": {
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
+    }
+  }
+}
+```
+
+Only declare background audio if your app genuinely needs it. App Store reviewers check that apps using this mode actually play audio in the background.
+
+## Keeping the Screen On
+
+During an emergency nobody should have to unlock a phone to see the next step. `expo-keep-awake` stops the screen from turning off while a screen is open:
+
+```tsx
+import { useKeepAwake } from "expo-keep-awake";
+
+export function ProtocolScreen() {
+  useKeepAwake(); // screen stays on while this screen is mounted
+  // ...
+}
+```
+
+Use it only on screens that need it, so the battery is not drained elsewhere in the app.
+
+## Working Offline
+
+Guidance has to work in a basement, an ambulance or a hospital with poor signal:
+
+- **Bundle the protocol content** inside the app as JSON instead of fetching it at runtime. Update it with each app release, or download updates in the background and keep the last good version.
+- **Bundle every sound file** as an asset.
+- **Rely on the device's built-in voices.** The system text-to-speech engines on iOS and Android work offline once a voice is installed, but test on your target devices to confirm.
+- **Persist state** such as the current step, for example with Redux and a persistence layer, so an accidental app restart does not lose the user's place.
+
+## Testing on Real Devices
+
+Audio behaviour differs between simulators, operating system versions and phone makers, so test on real hardware, on both iOS and Android. A checklist for this kind of feature:
+
+- Lock the screen mid-protocol and confirm guidance continues.
+- Switch to another app and back again.
+- Turn the silent switch on (iPhone) and confirm the app still speaks.
+- Put the phone in airplane mode and run a full protocol.
+- Receive a phone call during guidance and check what happens when it ends.
+- Repeat on several Android phones from different manufacturers, because battery optimisation can stop background audio on some of them.
+
+## Conclusion
+
+Reliable voice guidance in Expo comes from a few pieces working together: `expo-speech` for spoken steps, a simple queue so instructions never overlap, `expo-audio` for cues and audio settings, the iOS background audio mode, and content bundled inside the app so nothing depends on the network. Test it the way it will be used, with the screen locked and the signal gone, and it will hold up when it matters.
+
+For more on making an app feel fast and responsive, see my [React Native performance checklist](/blog/react-native-performance-optimization).

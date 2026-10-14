@@ -5,6 +5,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+// Post images may be absolute URLs or paths under /public; fall back to the site share image.
+function postImageUrl(image?: string) {
+  if (!image) return `${DATA.url}/og.jpg`;
+  return image.startsWith("http") ? image : `${DATA.url}${image}`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -20,11 +26,14 @@ export async function generateMetadata({
     summary: description,
     image,
   } = post.metadata;
-  let ogImage = image ? `${DATA.url}${image}` : `${DATA.url}/og?title=${title}`;
+  let ogImage = postImageUrl(image);
 
   return {
     title,
     description,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
     openGraph: {
       title,
       description,
@@ -72,9 +81,7 @@ export default async function Blog({
             datePublished: post.metadata.publishedAt,
             dateModified: post.metadata.publishedAt,
             description: post.metadata.summary,
-            image: post.metadata.image
-              ? `${DATA.url}${post.metadata.image}`
-              : `${DATA.url}/og?title=${post.metadata.title}`,
+            image: postImageUrl(post.metadata.image),
             url: `${DATA.url}/blog/${post.slug}`,
             author: {
               "@type": "Person",

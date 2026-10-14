@@ -1,0 +1,140 @@
+---
+title: "React Native Performance Optimization: A Practical Checklist"
+publishedAt: "2026-10-14"
+summary: "How to find and fix slow screens in a React Native app: measuring first, cutting unnecessary re-renders, tuning long lists, optimising images, keeping animations off the JavaScript thread and speeding up startup."
+image: /blog-covers/react-native-performance-optimization.jpg
+---
+
+Users rarely say an app is slow. They just stop using it. A list that stutters, a button that takes half a second to respond or a splash screen that hangs around too long all quietly cost you users.
+
+At NeuroEquilibrium, I work on cross-platform healthcare apps where we improved overall app performance by 60%. This post is the checklist I use when a React Native app feels slow: where to look first, and the fixes that usually make the biggest difference.
+
+![React Native performance optimization](/blog-covers/react-native-performance-optimization.jpg)
+
+## Measure Before You Change Anything
+
+Performance work without measurement is guesswork. Start by finding out what is actually slow:
+
+- **Perf Monitor:** open the developer menu and enable it. It shows the frame rate of the UI thread and the JavaScript thread. If the JS frame rate drops while the UI one stays high, your JavaScript is doing too much work.
+- **React DevTools Profiler:** record an interaction and see which components re-rendered and how long each took. React Native DevTools includes it.
+- **Native profilers:** Android Studio's profiler and Xcode Instruments show CPU, memory and rendering on the native side.
+
+Always profile a release build on a real, mid-range Android phone. Debug builds are much slower, and a recent iPhone hides problems your users will notice.
+
+## Make Sure Hermes and the New Architecture Are On
+
+Hermes is the JavaScript engine built for React Native. It starts apps faster and uses less memory, and it has been the default for several versions. If you are upgrading an older project, check that it has not been turned off.
+
+The New Architecture is the default in recent React Native versions too. It removes the old asynchronous bridge between JavaScript and native code, which improves responsiveness. Keeping React Native up to date is one of the cheapest performance wins available, although each upgrade needs testing.
+
+## Stop Unnecessary Re-renders
+
+Many slow screens have the same cause: components re-rendering when nothing they show has changed.
+
+Wrap list items and other components that render often in `React.memo`, and keep the props you pass to them stable:
+
+```tsx
+import React, { memo, useCallback } from "react";
+import { Pressable, Text } from "react-native";
+
+type Props = { id: string; title: string; onPress: (id: string) => void };
+
+const SessionRow = memo(function SessionRow({ id, title, onPress }: Props) {
+  return (
+    <Pressable onPress={() => onPress(id)}>
+      <Text>{title}</Text>
+    </Pressable>
+  );
+});
+
+function SessionList({ sessions }: { sessions: Session[] }) {
+  // Without useCallback, a new function on every render
+  // would make every row re-render.
+  const handlePress = useCallback((id: string) => {
+    navigateToSession(id);
+  }, []);
+
+  return sessions.map((s) => (
+    <SessionRow key={s.id} id={s.id} title={s.title} onPress={handlePress} />
+  ));
+}
+```
+
+With Redux, select only the data a component needs. Selecting a whole slice of state makes the component re-render whenever anything in that slice changes:
+
+```ts
+// Re-renders whenever anything in `sessions` changes
+const sessions = useSelector((state: RootState) => state.sessions);
+
+// Re-renders only when this one count changes
+const remaining = useSelector(
+  (state: RootState) => state.sessions.remainingCount
+);
+```
+
+For values derived from state, such as a filtered or sorted list, use `createSelector` from Redux Toolkit so the work is only redone when its inputs change.
+
+## Tune Your Lists
+
+Never render a long list with `ScrollView` and `map`. It renders every item at once. Use `FlatList`, or Shopify's `FlashList` for very long or complex lists, and give it what it needs to render efficiently:
+
+```tsx
+<FlatList
+  data={videos}
+  keyExtractor={(item) => item.id}
+  renderItem={renderVideoCard}
+  initialNumToRender={6}
+  windowSize={5}
+  maxToRenderPerBatch={6}
+  removeClippedSubviews
+  getItemLayout={(_, index) => ({
+    length: CARD_HEIGHT,
+    offset: CARD_HEIGHT * index,
+    index,
+  })}
+/>
+```
+
+- `keyExtractor` with a stable ID lets React reuse rows instead of recreating them.
+- `getItemLayout` skips measuring each row, which makes scrolling and jumping to an item much faster. Use it whenever your rows have a fixed height.
+- A smaller `windowSize` keeps fewer off-screen rows in memory.
+- Define `renderItem` outside the component, or wrap it in `useCallback`.
+
+## Optimise Images
+
+Large images are a common cause of memory warnings and jank, especially in feeds:
+
+- **Resize on the server.** Do not download a 3000-pixel image to show it at 300 pixels.
+- **Use a caching image component** such as `expo-image`, which caches to disk and decodes efficiently.
+- **Prefer modern formats** like WebP, which are much smaller than PNG or JPEG at the same quality.
+- **Show placeholders** so the layout does not jump while images load.
+
+## Keep Animations Off the JavaScript Thread
+
+If an animation runs on the JavaScript thread, it stutters whenever JavaScript is busy, for example while a screen loads data. Run animations on the UI thread instead:
+
+- With the built-in `Animated` API, set `useNativeDriver: true` wherever it is supported.
+- For gestures and complex animations, use `react-native-reanimated`, which runs animation logic on the UI thread.
+
+## Do Less on the JavaScript Thread
+
+The JavaScript thread handles your logic, state updates and responses to touches. When it is blocked, the app stops responding:
+
+- Move heavy data processing, such as sorting thousands of records, to the server where you can.
+- Break large one-off tasks into smaller pieces, or defer them until a screen has finished its opening animation.
+- Remove `console.log` calls from production builds. In a busy app, logging alone can noticeably slow things down. The `babel-plugin-transform-remove-console` plugin strips them at build time.
+
+## Speed Up Startup
+
+The first few seconds shape how users feel about an app:
+
+- **Load less at launch.** Only fetch what the first screen needs, and load everything else afterwards.
+- **Lazy-load heavy screens** and libraries that are only used deep inside the app.
+- **Audit your dependencies.** Remove libraries you no longer use, and check the size of new ones before you add them.
+- **Keep the splash screen up until the first screen is ready**, then hide it, so users never see a blank screen.
+
+## Conclusion
+
+React Native apps can feel just as fast as fully native ones, but it does not happen by default. Measure on a real device, stop components re-rendering when nothing changed, tune long lists, size images properly and keep animations on the UI thread. Fixing the few biggest problems you find usually makes a bigger difference than any number of small tweaks.
+
+Real-time features need extra care too. Read [how to build reliable real-time chat with Socket.io](/blog/react-native-socket-io-real-time-chat) for the patterns I use.

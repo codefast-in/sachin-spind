@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar";
+import {ThemeFavicon} from "@/components/theme-favicon";
 import {ThemeProvider} from "@/components/theme-provider";
 import {TooltipProvider} from "@/components/ui/tooltip";
 import {DATA} from "@/data/resume";
@@ -14,20 +15,48 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 
+const SEO_TITLE = `${DATA.name} – React Native Developer`;
+const SEO_DESCRIPTION =
+  "Sachin Gadre is a React Native developer in Jaipur, India, building production iOS and Android apps with React Native, Expo and TypeScript. Currently building healthcare apps at NeuroEquilibrium.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(DATA.url),
   title: {
-    default: DATA.name,
+    default: SEO_TITLE,
     template: `%s | ${DATA.name}`,
   },
-  description: DATA.description,
+  description: SEO_DESCRIPTION,
+  applicationName: DATA.name,
+  authors: [{name: DATA.name, url: DATA.url}],
+  creator: DATA.name,
+  keywords: [
+    "Sachin Gadre",
+    "React Native developer",
+    "React Native developer Jaipur",
+    "mobile app developer India",
+    "iOS developer",
+    "Android developer",
+    "Expo",
+    "TypeScript",
+    "Next.js developer",
+  ],
+  icons: {
+    icon: [
+      {url: "/favicon-light.png", media: "(prefers-color-scheme: light)"},
+      {url: "/favicon-dark.png", media: "(prefers-color-scheme: dark)"},
+    ],
+    apple: "/apple-icon.png",
+  },
   openGraph: {
-    title: `${DATA.name}`,
-    description: DATA.description,
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
     url: DATA.url,
-    siteName: `${DATA.name}`,
+    siteName: DATA.name,
     locale: "en_US",
     type: "website",
+    images: [
+      {url: "/og.jpg", width: 1200, height: 630, alt: SEO_TITLE},
+    ],
   },
   robots: {
     index: true,
@@ -41,13 +70,14 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: `${DATA.name}`,
     card: "summary_large_image",
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
+    creator: "@sachin_SPind",
+    images: ["/og.jpg"],
   },
-  verification: {
-    google: "",
-    yandex: "",
-  },
+  // Add the Google Search Console code here once the site is verified:
+  // verification: {google: "..."},
 };
 
 export default function RootLayout({
@@ -76,6 +106,7 @@ export default function RootLayout({
           fontSans.variable
         )}>
         <ThemeProvider attribute="class" defaultTheme="light">
+          <ThemeFavicon />
           <TooltipProvider delayDuration={0}>
             <SpeedInsights />
             <Analytics />
