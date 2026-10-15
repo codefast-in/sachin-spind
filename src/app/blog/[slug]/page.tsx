@@ -1,7 +1,9 @@
 import { getPost } from "@/data/blog";
 import { DATA } from "@/data/resume";
 import { formatDate } from "@/lib/utils";
+import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -86,10 +88,19 @@ export default async function Blog({
             author: {
               "@type": "Person",
               name: DATA.name,
+              alternateName: DATA.alternateNames,
+              url: DATA.url,
             },
           }),
         }}
       />
+      <Link
+        href="/blog"
+        className="group mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-4 transition-transform group-hover:-translate-x-0.5" />
+        Back to blogs
+      </Link>
       <h1 className="title text-4xl font-bold tracking-tighter max-w-[650px]">
         {post.metadata.title}
       </h1>

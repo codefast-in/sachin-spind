@@ -1,0 +1,277 @@
+---
+title: "How to Make PDFs Load Faster in React Native"
+publishedAt: "2026-10-15"
+summary: "Why large PDFs open slowly in React Native apps and how to fix it: download straight to a file instead of base64, cache by version, start the download before navigating, move decryption off the JavaScript thread, and measure every step."
+image: /blog-covers/react-native-pdf-loading-performance.jpg
+---
+
+Opening a PDF sounds like a solved problem. Then your users start opening 10 MB reports on a mid-range Android phone over a mobile connection, and a spinner sits on the screen long enough for them to give up.
+
+In one of the React Native apps I work on, users open large PDF reports throughout the day, and loading them took too long. The biggest gains came from the work the app did between receiving the file and showing it, not from the network. This post walks through where that time goes and the changes that cut it down, with a before-and-after example you can measure in your own app.
+
+The examples use [react-native-pdf](https://github.com/wonday/react-native-pdf) to display files and [react-native-blob-util](https://github.com/RonRadtke/react-native-blob-util) to download them, which is a common combination.
+
+![How to make PDFs load faster in React Native](/blog-covers/react-native-pdf-loading-performance.jpg)
+
+## Where the Time Goes
+
+When a PDF loads slowly, it is tempting to blame the network. Measure each step, though, and you often find the time is spent somewhere else:
+
+- **Downloading the file.** This depends on file size and connection speed.
+- **Converting it to base64.** A base64 string is about a third larger than the original file, and building it takes time.
+- **Moving it into JavaScript.** The whole string ends up in JavaScript memory, where it competes with everything else your app is doing.
+- **Decrypting it in JavaScript.** If files are encrypted, a pure-JavaScript crypto library decrypts them on the same thread that handles your UI. Nothing responds until it finishes.
+- **Decoding it again.** A `data:` URI has to be decoded back into bytes by the native PDF viewer.
+- **Downloading it again next time.** Without a cache, every visit repeats all of the above.
+
+Only the first step is unavoidable. The rest can be removed or moved off the JavaScript thread.
+
+## The Slow Version
+
+This is a common way to load a protected PDF, and it is the pattern to avoid:
+
+```tsx
+import ReactNativeBlobUtil from "react-native-blob-util";
+import CryptoJS from "crypto-js";
+import Pdf from "react-native-pdf";
+
+async function loadReport(url: string, token: string, key: string) {
+  // 1. Download the whole file into memory
+  const response = await ReactNativeBlobUtil.fetch("GET", url, {
+    Authorization: `Bearer ${token}`,
+  });
+
+  // 2. Turn it into a base64 string inside JavaScript
+  const encryptedBase64 = response.base64();
+
+  // 3. Decrypt it on the JavaScript thread
+  const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key).toString(
+    CryptoJS.enc.Base64
+  );
+
+  // 4. Hand the viewer a huge data URI to decode again
+  return `data:application/pdf;base64,${decrypted}`;
+}
+
+function ReportScreen({ url, token, cryptoKey }: Props) {
+  const [uri, setUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadReport(url, token, cryptoKey).then(setUri);
+  }, [url]);
+
+  if (!uri) return <ActivityIndicator />;
+  return <Pdf source={{ uri }} style={{ flex: 1 }} />;
+}
+```
+
+It works, and with small test files it even feels fine. With large files it is slow at every step, it downloads the file again on every visit, and the decryption step can freeze the screen.
+
+## Fix 1: Download Straight to a File
+
+Instead of pulling the file into JavaScript, tell the native layer to write it directly to disk and give the viewer the file path. The bytes never pass through JavaScript at all:
+
+```ts
+import ReactNativeBlobUtil from "react-native-blob-util";
+
+const CACHE_DIR = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/pdfs`;
+
+async function downloadToFile(url: string, token: string, path: string) {
+  if (!(await ReactNativeBlobUtil.fs.isDir(CACHE_DIR))) {
+    await ReactNativeBlobUtil.fs.mkdir(CACHE_DIR);
+  }
+
+  await ReactNativeBlobUtil.config({ path }).fetch("GET", url, {
+    Authorization: `Bearer ${token}`,
+  });
+  return path;
+}
+```
+
+```tsx
+<Pdf source={{ uri: `file://${path}` }} style={{ flex: 1 }} />
+```
+
+This one change removes the base64 conversion, the large string in JavaScript memory and the second decode in the viewer.
+
+## Fix 2: Cache Files by Version
+
+Most reports are opened more than once. Keep the downloaded file and reuse it, but include a version in the file name so an updated report is never shown from a stale copy:
+
+```ts
+async function getReportFile(report: Report, token: string) {
+  // updatedAt changes whenever the server regenerates the file
+  const version = new Date(report.updatedAt).getTime();
+  const path = `${CACHE_DIR}/${report.id}-${version}.pdf`;
+
+  if (await ReactNativeBlobUtil.fs.exists(path)) {
+    return path; // second visit: no network at all
+  }
+
+  return downloadToFile(report.fileUrl, token, path);
+}
+```
+
+Store the cache in the app's private cache directory, not in shared storage, so other apps cannot read the files. The operating system can also clear this directory when the device runs low on space, so always check that the file exists before using it.
+
+react-native-pdf has its own `cache` option on the `source` prop, but managing the file yourself gives you control over the file name, versioning and clean-up.
+
+## Fix 3: Start the Download Before the Screen Opens
+
+Users tap a report and then wait for the new screen to mount before anything starts downloading. Start the download on the tap instead, and let the screen pick up the request that is already running:
+
+```ts
+const inFlight = new Map<string, Promise<string>>();
+
+export function prefetchReport(report: Report, token: string) {
+  if (!inFlight.has(report.id)) {
+    const request = getReportFile(report, token).finally(() =>
+      inFlight.delete(report.id)
+    );
+    inFlight.set(report.id, request);
+  }
+  return inFlight.get(report.id)!;
+}
+```
+
+```tsx
+// In the list
+<Pressable
+  onPress={() => {
+    prefetchReport(report, token);
+    navigation.navigate("Report", { report });
+  }}
+>
+```
+
+```tsx
+// In the report screen
+useEffect(() => {
+  prefetchReport(report, token).then(setPath);
+}, [report.id]);
+```
+
+Because both calls share one promise, the file is only downloaded once, and the screen transition no longer adds to the wait.
+
+## Fix 4: Take Decryption Off the JavaScript Thread
+
+If your files must be decrypted on the device, do not use a pure-JavaScript library for large files. It blocks the thread that handles touches and rendering, so the whole app freezes while it runs.
+
+Better options, from simplest to most involved:
+
+- **Let the transport do the work.** If files are only encrypted to protect them in transit, HTTPS already does that. Combine it with short-lived signed URLs and private cache storage, and you may not need app-level decryption at all.
+- **Use native crypto.** Libraries such as `react-native-quick-crypto` run the cipher in native code and work on binary buffers instead of base64 strings, which is much faster than a JavaScript implementation.
+- **Write a small native module** that reads the encrypted file, decrypts it and writes the result to disk in one pass, so JavaScript only ever handles file paths.
+
+Whichever you choose, decrypt into a file in the private cache directory and pass that path to the viewer, exactly as in Fix 1.
+
+## Fix 5: Show Progress, Not a Spinner
+
+Even a fast download takes a moment on a slow connection. A progress bar feels much quicker than a spinner, because users can see something happening:
+
+```ts
+await ReactNativeBlobUtil.config({ path })
+  .fetch("GET", url, { Authorization: `Bearer ${token}` })
+  .progress({ interval: 200 }, (received, total) => {
+    setProgress(Number(received) / Number(total));
+  });
+```
+
+Once the file is on disk, react-native-pdf's `onLoadComplete` callback tells you when the first page is ready to show.
+
+## Fix 6: Keep the Viewer Light
+
+Loading quickly is only half the experience. A viewer that uses too much memory scrolls badly and can crash on older phones:
+
+- Give the `Pdf` component its own full-size container. Do not put it inside a `ScrollView`, because it already handles scrolling and zooming itself.
+- Unmount the viewer when the user leaves the screen, so its memory is released.
+- Ask your backend to generate reasonably sized files. A report with full-resolution photos on every page will be slow on any device.
+
+## The Faster Version
+
+Put together, the report screen looks like this:
+
+```tsx
+import Pdf from "react-native-pdf";
+
+function ReportScreen({ route }: Props) {
+  const { report } = route.params;
+  const token = useAuthToken();
+  const [path, setPath] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    prefetchReport(report, token).then((file) => {
+      if (active) setPath(file);
+    });
+    return () => {
+      active = false;
+    };
+  }, [report.id]);
+
+  if (!path) return <DownloadProgress value={progress} />;
+
+  return (
+    <Pdf
+      source={{ uri: `file://${path}` }}
+      style={{ flex: 1 }}
+      onError={() => showRetry()}
+    />
+  );
+}
+```
+
+On a first visit, the download starts as soon as the user taps. The file goes straight to disk and opens from there. On every later visit, the report opens from the cache without touching the network.
+
+## Measure the Difference Yourself
+
+Do not take improvements on faith. Time each step in a release build on a real, mid-range Android phone:
+
+```ts
+async function timed<T>(label: string, task: () => Promise<T>) {
+  const start = performance.now();
+  const result = await task();
+  console.log(`${label}: ${Math.round(performance.now() - start)} ms`);
+  return result;
+}
+
+const path = await timed("download", () => getReportFile(report, token));
+```
+
+Log the time from the tap to the first visible page, too, using `onLoadComplete`. That is the number users actually feel. Compare three cases:
+
+- The old approach on a first visit.
+- The new approach on a first visit.
+- The new approach on a second visit, which should be close to instant.
+
+## Clean Up Old Files
+
+A cache that never shrinks eventually becomes a storage problem. On app start, remove files that have not been used for a while:
+
+```ts
+const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+export async function cleanPdfCache() {
+  if (!(await ReactNativeBlobUtil.fs.isDir(CACHE_DIR))) return;
+
+  const files = await ReactNativeBlobUtil.fs.ls(CACHE_DIR);
+  await Promise.all(
+    files.map(async (name) => {
+      const path = `${CACHE_DIR}/${name}`;
+      const { lastModified } = await ReactNativeBlobUtil.fs.stat(path);
+      if (Date.now() - Number(lastModified) > MAX_AGE_MS) {
+        await ReactNativeBlobUtil.fs.unlink(path);
+      }
+    })
+  );
+}
+```
+
+Also delete the cache when a user logs out, so the next person on a shared device cannot see their files.
+
+## Conclusion
+
+Slow PDFs in React Native are rarely a network problem. They are usually caused by moving large files through JavaScript as base64, decrypting them on the JavaScript thread and downloading them again on every visit. Download straight to a file, cache by version, start the download on the tap, keep decryption native and show real progress. Measure each step before and after, and you will know exactly how much faster your users get their documents.
+
+For more ways to speed up your app, see my [React Native performance checklist](/blog/react-native-performance-optimization).

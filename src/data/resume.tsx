@@ -3,14 +3,15 @@ import { HomeIcon, NotebookIcon, SmartphoneIcon } from "lucide-react";
 
 export const DATA = {
   name: "Sachin Gadre",
+  alternateNames: ["Sachin Gadare", "Sachin Spind", "Spind"],
   initials: "SG",
   url: "https://sachin-spind.vercel.app",
   location: "Jaipur, India",
   locationLink: "https://www.google.com/maps/place/jaipur",
   description:
-    "React Native Developer. I build production iOS and Android apps, currently healthcare apps at NeuroEquilibrium.",
+    "React Native and full stack developer. I build production iOS and Android apps and web apps, currently healthcare apps at NeuroEquilibrium.",
   summary:
-  "React Native developer building production iOS and Android apps, currently on healthcare products at NeuroEquilibrium with React Native 0.84, TypeScript and Redux. Improved app performance by 60% and shipped releases that grew new users by 10%. Built [Tap In Shorts](/#projects) and [ZimCupid](/#projects), both live on Google Play and the App Store, and built Code Emergency with AIIMS Bhopal for emergency medical teams. I hold a [Master's degree in Computer Applications (MCA)](/#education).",
+  "React Native and full stack software developer building production iOS and Android apps, currently on healthcare products at NeuroEquilibrium with React Native 0.84, TypeScript and Redux. Improved app performance by 60% and shipped releases that grew new users by 10%. Built [Tap In Shorts](/#projects) and [ZimCupid](/#projects), both live on Google Play and the App Store, and built Code Emergency with AIIMS Bhopal for emergency medical teams. Beyond mobile, I build full stack web apps with Next.js, Node.js, Express and MongoDB. I hold a [Master's degree in Computer Applications (MCA)](/#education). You may also know me as Sachin Gadare or Sachin Spind.",
   avatarUrl: "/avatar.jpg",
   skills: [
     "React Native",

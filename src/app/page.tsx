@@ -24,9 +24,15 @@ const jsonLd = {
       "@type": "Person",
       "@id": `${DATA.url}/#person`,
       name: DATA.name,
+      alternateName: DATA.alternateNames,
       url: DATA.url,
       image: `${DATA.url}${DATA.avatarUrl}`,
-      jobTitle: "React Native Developer",
+      jobTitle: [
+        "React Native Developer",
+        "Full Stack Developer",
+        "Mobile App Developer",
+        "Software Developer",
+      ],
       description: DATA.summary.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"),
       email: `mailto:${DATA.contact.email}`,
       address: {
@@ -87,7 +93,7 @@ export default function Page() {
               <div className="rounded-full bg-gradient-to-tr from-foreground via-muted-foreground to-foreground p-[3px] shadow-lg">
                 <Avatar className="size-28 border-[3px] border-background">
                   <AvatarImage
-                    alt={DATA.name}
+                    alt={`${DATA.name}, React Native and full stack developer`}
                     src={DATA.avatarUrl}
                     className="object-cover"
                   />

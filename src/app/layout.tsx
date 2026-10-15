@@ -15,9 +15,9 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 
-const SEO_TITLE = `${DATA.name} – React Native Developer`;
+const SEO_TITLE = `${DATA.name} – React Native & Full Stack Developer`;
 const SEO_DESCRIPTION =
-  "Sachin Gadre is a React Native developer in Jaipur, India, building production iOS and Android apps with React Native, Expo and TypeScript. Currently building healthcare apps at NeuroEquilibrium.";
+  "Sachin Gadre (Sachin Spind) is a React Native and full stack developer in Jaipur, India, building iOS, Android and web apps with React Native and Next.js.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(DATA.url),
@@ -30,15 +30,35 @@ export const metadata: Metadata = {
   authors: [{name: DATA.name, url: DATA.url}],
   creator: DATA.name,
   keywords: [
+    // Name variants
     "Sachin Gadre",
+    "Sachin Gadare",
+    "Sachin Spind",
+    "Spind",
+    "sachinspind",
+    // Roles
     "React Native developer",
-    "React Native developer Jaipur",
-    "mobile app developer India",
+    "React Native app developer",
+    "mobile app developer",
+    "app developer",
+    "full stack developer",
+    "software developer",
+    "software engineer",
+    "IT developer",
+    "web developer",
+    "Next.js developer",
+    "Node.js developer",
     "iOS developer",
     "Android developer",
-    "Expo",
-    "TypeScript",
-    "Next.js developer",
+    // Location and intent
+    "React Native developer Jaipur",
+    "app developer Jaipur",
+    "full stack developer India",
+    "software developer India",
+    "hire React Native developer",
+    "best React Native developer",
+    "best app developer",
+    "best developer",
   ],
   icons: {
     icon: [
