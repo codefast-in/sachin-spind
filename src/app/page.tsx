@@ -1,3 +1,4 @@
+import { ContactActions } from "@/components/contact-actions";
 import { HackathonCard } from "@/components/hackathon-card";
 import BlurFade from "@/components/magicui/blur-fade";
 import BlurFadeText from "@/components/magicui/blur-fade-text";
@@ -5,7 +6,9 @@ import { ProjectCard } from "@/components/project-card";
 import { ResumeCard } from "@/components/resume-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { DATA } from "@/data/resume";
+import { freelanceMailto } from "@/lib/contact";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Markdown from "react-markdown";
@@ -88,6 +91,28 @@ export default function Page() {
                 as="p"
                 text={DATA.description}
               />
+              <BlurFade delay={BLUR_FADE_DELAY * 2}>
+                <div className="flex flex-col items-start gap-3 pt-3">
+                  <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium">
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                      <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                    </span>
+                    Available for freelance work
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href="#contact" className={buttonVariants()}>
+                      Hire me
+                    </Link>
+                    <a
+                      href={freelanceMailto}
+                      className={buttonVariants({ variant: "outline" })}
+                    >
+                      Email me
+                    </a>
+                  </div>
+                </div>
+              </BlurFade>
             </div>
             <BlurFade delay={BLUR_FADE_DELAY}>
               <div className="rounded-full bg-gradient-to-tr from-foreground via-muted-foreground to-foreground p-[3px] shadow-lg">
@@ -268,20 +293,18 @@ export default function Page() {
                 Contact
               </div>
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                Get in Touch
+                Let&apos;s work together
               </h2>
               <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Want to chat? Just shoot me a dm{" "}
-                <Link
-                  href={DATA.contact.social.X.url}
-                  className="text-blue-500 hover:underline"
-                >
-                  with a direct question on twitter
-                </Link>{" "}
-                and I&apos;ll respond whenever I can. I will ignore all
-                soliciting.
+                I&apos;m available for freelance work: React Native apps for
+                iOS and Android, and full stack web apps with Next.js and
+                Node.js. Tell me about your project and I&apos;ll get back to
+                you.
               </p>
             </div>
+          </BlurFade>
+          <BlurFade delay={BLUR_FADE_DELAY * 17}>
+            <ContactActions className="pt-2" />
           </BlurFade>
         </div>
       </section>

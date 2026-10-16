@@ -3,6 +3,10 @@
 import { AnimatePresence, motion, useInView, Variants } from "framer-motion";
 import { useRef } from "react";
 
+// Long staggered delays keep content invisible for seconds on every visit
+// (e.g. the skills list), so cap how late any element starts animating.
+const MAX_DELAY = 0.35;
+
 interface BlurFadeProps {
   children: React.ReactNode;
   className?: string;
@@ -45,7 +49,7 @@ const BlurFade = ({
         exit="hidden"
         variants={combinedVariants}
         transition={{
-          delay: 0.04 + delay,
+          delay: 0.04 + Math.min(delay, MAX_DELAY),
           duration,
           ease: "easeOut",
         }}

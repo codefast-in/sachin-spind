@@ -1,4 +1,4 @@
-import { getPost } from "@/data/blog";
+import { getBlogPostsMeta, getPost } from "@/data/blog";
 import { DATA } from "@/data/resume";
 import { formatDate } from "@/lib/utils";
 import { ArrowLeftIcon } from "lucide-react";
@@ -13,6 +13,14 @@ function postImageUrl(image?: string) {
   return image.startsWith("http") ? image : `${DATA.url}${image}`;
 }
 
+// Pre-render every post at build time so pages are served as static HTML and
+// can be prefetched by <Link>; unknown slugs return a 404.
+export function generateStaticParams() {
+  return getBlogPostsMeta().map((post) => ({ slug: post.slug }));
+}
+
+export const dynamicParams = false;
+
 export async function generateMetadata({
   params,
 }: {
@@ -21,6 +29,7 @@ export async function generateMetadata({
   };
 }): Promise<Metadata | undefined> {
   let post = await getPost(params.slug);
+  if (!post) return;
 
   let {
     title,
